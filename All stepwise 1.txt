@@ -192,7 +192,7 @@ def visualizationInR(rawData: RDD[Vector]): Unit = {
     val data = rawData.cache()
 
     val kmeans = new KMeans()
-    kmeans.setK(60)
+    kmeans.setK(70)
     kmeans.setRuns(10)
     kmeans.setEpsilon(1.0e-6)
     val model = kmeans.run(data)
@@ -200,14 +200,19 @@ def visualizationInR(rawData: RDD[Vector]): Unit = {
     val sample = data.map(datum =>
       model.predict(datum)
     )
-    sample.saveAsTextFile("hdfs:///user/DemoUser/kmeansCID60")
+    sample.saveAsTextFile("hdfs:///user/DemoUser/kmeansCID70")
 
     data.unpersist()
   }
 visualizationInR(termDocMatrix)
 
 //Aufrufen der Kmeansdatei
-val kmeansCID = sc.textFile("hdfs:///user/DemoUser/kmeansCID60")
+val kmeansCID = sc.textFile("hdfs:///user/DemoUser/kmeansCID70",1)
+
+//Merging into pairs with zip
+
+val win3 = raw zip kmeansCID
+win3.saveAsTextFile("hdfs:///user/DemoUser/win3")
 
 
 
@@ -224,3 +229,4 @@ val win = rawID.map{case (rawDs, id) => (rawDs,kmeansID(id.toLong))}
 win.saveAsTextFile("hdfs:///user/DemoUser/win2")
 
 // WORKs just  NoSuchElementException: key not found: 4988
+///vfbvcb
