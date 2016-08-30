@@ -1,9 +1,35 @@
+
+
+
+
 # SparkAdvancedAnalytics
+
+start shell using putty
+server: cdhsync-mn0.northeurope.cloudapp.azure.com
+
+spark-shell --jars /home/cloudera/AdvancedAnalytics/ch06-lsa/target/ch06-lsa-1.0.2-jar-with-dependencies.jar  --num-executors 11
+
+run code in uebung_spark.scala
+
+
 tfidf, kmeans, SVD, Hive&amp;HBase
 
 Kmeans
 + Vector.sparse Aufbau: (Länge des Vektors, nonzero TermIds, values)
-+Output sind clusterIds (und features) siehe kmeans: http://192.168.1.243:8888/filebrowser/view=/user/DemoUser/kmeans/part-00000
++Output sind clusterIds (und features) siehe kmeans: 
+
+
+
+
+
+
+
+
+
+
+
+
+http://192.168.1.243:8888/filebrowser/view=/user/DemoUser/kmeans/part-00000
 +Matching mit Unique ID, um als Ergebnis Cluster Id, Tweettext und Id_str zu bekommen
 -Eigentlich wird als Input ein Vector.dense erwartet, stimmt das Clustering dann noch?
 -Clustering für K=20 und K=60: Tweets haben minimale Ähnlichkeit. Clusterstruktur ist nicht erkennbar. (http://192.168.1.243:8888/filebrowser/view=/user/DemoUser/win/_temporary/0/_temporary/attempt_201608031637_0529_m_000000_334/part-00000) -Woran liegt das? –schlechte Tweets? –Vector.sparse? –Matching mit Unique Id? 
