@@ -229,3 +229,4 @@ else{
 newDF.write.mode("overwrite").saveAsTable("demo_user_db.Twitter_ResultsZZZ")
 }
 }
+// [755518498722443264,0,1,Having chronic migraines as well as stomach ulcers so you're unable to take aspirin is what actual hell is like🙃]
