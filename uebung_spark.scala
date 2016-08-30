@@ -39,7 +39,8 @@ val hivesql =  hiveContext.sql("FROM demo_user_db.twitter_use_case1 SELECT text,
 val rdd = hivesql.rdd
 val raw = rdd.map {
  case Row(text: String, key: String) => (text,key)
- }
+}
+
 
 val filename="/home/cloudera/AdvancedAnalytics/ch06-lsa/src/main/resources/stopwords.txt"
 val getStops=scala.io.Source.fromFile(filename).getLines().toSet
@@ -178,7 +179,7 @@ object ParseWikipedia {
 
 val numTerms = 50000
 val (termDocMatrix, termIds, docIds, idfs) = ParseWikipedia.documentTermMatrix(lemmatized, stopWords, numTerms, sc)
-termDocMatrix.saveAsTextFile("hdfs:///user/" + DemoUser + "/termDocMatrix")
+termDocMatrix.zip(docIDs).saveAsTextFile("hdfs:///user/" + DemoUser + "/termDocMatrix")
 ////////////////////////////////////////////// kmeans 
 
 //KMeans
@@ -207,10 +208,10 @@ def visualizationInR(rawData: RDD[Vector],k: Int): RDD[(Int,Int)] = {
 
 //Lade Ergebnisstabelle
 import org.apache.spark.sql._
-val hiveContext = new org.apache.spark.sql.hive.HiveContext(sc)
-val RepartAll = hiveContext.sql("FROM demo_user_db.twitter_use_case1 SELECT * LIMIT 10000").repartition(1)
-val repartKeyrdd = hiveContext.sql("FROM demo_user_db.twitter_use_case1 SELECT key LIMIT 10000").rdd.repartition(1)
-val termDocMatrix = MLUtils.loadVectors(sc, "hdfs:///user/" + DemoUser + "/termDocMatrix")
+//val hiveContext = new org.apache.spark.sql.hive.HiveContext(sc)
+//val RepartAll = hiveContext.sql("FROM demo_user_db.twitter_use_case1 SELECT * LIMIT 10000").repartition(1)
+
+//val termDocMatrix = MLUtils.loadVectors(sc, "hdfs:///user/" + DemoUser + "/termDocMatrix")
 val parsedDataVal = termDocMatrix.map(_.toDense.values)
 val vecdense2 = parsedDataVal.map(Vectors.dense(_)).cache()
 val conf = new SparkConf().set("spark.serializer", "org.apache.spark.serializer.KryoSerializer").set("spark.kryoserializer.buffer.mb","1000000") 
@@ -218,7 +219,7 @@ for( k <- 10 to 30 by 10 ){
 val clusterId = visualizationInR(vecdense2,k)
 ///Lade Zwischenergebnis ClusterId
 
-val win2 = repartKeyrdd zip clusterId.repartition(1)
+val win2 = docIds zip clusterId.repartition(1)
 val WinDF = win2.map({case( Row(key: String), (clusterId, k))=>(key,clusterId,k)}).toDF("key","clusterId","k")
 val newDF = WinDF.join(RepartAll,"key")
 if (k > 10){
