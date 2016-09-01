@@ -36,6 +36,7 @@ import org.apache.spark.sql._
 
 val hiveContext = new org.apache.spark.sql.hive.HiveContext(sc)
 val hivesql =  hiveContext.sql("FROM demo_user_db.twitter_use_case1 SELECT text, key LIMIT 10000")
+//val hivesql =  hiveContext.sql("FROM demo_user_db.twitter_use_case1 SELECT * LIMIT 10000")
 val rdd = hivesql.rdd
 val raw = rdd.map {
  case Row(text: String, key: String) => (text,key)
