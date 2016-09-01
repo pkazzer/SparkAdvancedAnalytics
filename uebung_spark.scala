@@ -180,7 +180,7 @@ val conf = new SparkConf().set("spark.serializer", "org.apache.spark.serializer.
 val numTerms = 50000
 val (termDocMatrix, termIds, docIds, idfs) = ParseWikipedia.documentTermMatrix(lemmatized, stopWords, numTerms, sc)
 
-termDocMatrix.zip(docIDs).saveAsTextFile("hdfs:///user/" + DemoUser + "/termDocMatrix")
+//termDocMatrix.zip(docIDs).saveAsParquetFile("hdfs:///user/" + DemoUser + "/termDocMatrix")
 ////////////////////////////////////////////// kmeans 
 
 //KMeans
@@ -226,7 +226,7 @@ if (k > 10){
 newDF.write.mode("append").saveAsTable("demo_user_db.Twitter_ResultsZZZ")
 }
 else{
-newDF.write.mode("overwrite").saveAsTable("demo_user_db.Twitter_ResultsZZZ")
+newDF.saveAsTable("demo_user_db.Twitter_ResultsZZZ")
 }
 }
 // [755518498722443264,0,1,Having chronic migraines as well as stomach ulcers so you're unable to take aspirin is what actual hell is like🙃]
