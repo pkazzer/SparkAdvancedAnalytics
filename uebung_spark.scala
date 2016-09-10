@@ -35,7 +35,7 @@ val DemoUser = "TestUser"
 import org.apache.spark.sql._
 
 val hiveContext = new org.apache.spark.sql.hive.HiveContext(sc)
-val hivesql =  hiveContext.sql("FROM demo_user_db.twitter_use_case1 SELECT text, key LIMIT 10000")
+val hivesql =  hiveContext.sql("FROM demo_user_db.twitter_use_case1 SELECT text, key LIMIT 100")
 //val hivesql =  hiveContext.sql("FROM demo_user_db.twitter_use_case1 SELECT * LIMIT 10000")
 val rdd = hivesql.rdd
 val raw = rdd.map {
@@ -216,6 +216,7 @@ def visualizationInR(rawData: RDD[Vector],k: Int): RDD[(Int,Int)] = {
 //val termDocMatrix = MLUtils.loadVectors(sc, "hdfs:///user/" + DemoUser + "/termDocMatrix")
 val parsedDataVal = termDocMatrix.map(_.toDense.values)
 val vecdense2 = parsedDataVal.map(Vectors.dense(_)).cache()
+val Database="demo_user_db.Twitter_Resultstest"
 for( k <- 10 to 30 by 10 ){
 val clusterId = visualizationInR(vecdense2,k)
 ///Lade Zwischenergebnis ClusterId
@@ -224,10 +225,10 @@ val win2 = raw zip clusterId
 val WinDF = win2.map({case((text: String, key: String), (clusterId, k))=>( text,key,clusterId,k)}).toDF("orgText","key","clusterId","k")
 val newDF = WinDF.join(hivesql,"key")
 if (k > 10){
-newDF.write.mode("append").saveAsTable("demo_user_db.Twitter_ResultsZZZ")
+newDF.write.mode("append").saveAsTable(Database)
 }
 else{
-newDF.saveAsTable("demo_user_db.Twitter_ResultsZZZ")
+newDF.saveAsTable(Database)
 }
 }
 // [755518498722443264,0,1,Having chronic migraines as well as stomach ulcers so you're unable to take aspirin is what actual hell is like🙃]
