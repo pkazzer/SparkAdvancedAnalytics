@@ -225,9 +225,11 @@ val win2 = raw zip clusterId
 val WinDF = win2.map({case((text: String, key: String), (clusterId, k))=>( text,key,clusterId,k)}).toDF("orgText","key","clusterId","k")
 val newDF = WinDF.join(hivesql,"key")
 if (k > 10){
+print(k + "append")
 newDF.write.mode("append").saveAsTable(Database)
 }
 else{
+print(k + "create")
 newDF.saveAsTable(Database)
 }
 }
