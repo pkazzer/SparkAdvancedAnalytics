@@ -217,14 +217,16 @@ def visualizationInR(rawData: RDD[Vector],k: Int): RDD[(Int,Int)] = {
 val parsedDataVal = termDocMatrix.map(_.toDense.values)
 val vecdense2 = parsedDataVal.map(Vectors.dense(_)).cache()
 val Database="demo_user_db.Twitter_Resultstest"
-for( k <- 10 to 30 by 10 ){
-val clusterId = visualizationInR(vecdense2,k)
+//for( k <- 10 to 30 by 10 ){
+val clusterId10 = visualizationInR(vecdense2,10)
+val clusterId20 = visualizationInR(vecdense2,20)
+val clusterId30 = visualizationInR(vecdense2,30)
 ///Lade Zwischenergebnis ClusterId
-
-val win2 = raw zip clusterId
-val WinDF = win2.map({case((text: String, key: String), (clusterId, k))=>( text,key,clusterId,k)}).toDF("orgText","key","clusterId","k")
+val win2 = raw.zip(clusterId10).zip(clusterId20).zip(clusterId30)
+val WinDF = win2.map({case((((text: String, key: String), (clusterId10: Int, k10: Int)), (clusterId20: Int, k20: Int)) , (clusterId30: Int, k30: Int))=>( text,key,clusterId10,clusterId20,clusterId30)}).toDF("orgText","key","clusterId10","clusterId20","clusterId30")
 val newDF = WinDF.join(hivesql,"key")
-if (k > 10){
+newDF.saveAsTable(Database)
+/*if (k > 10){
 print(k + "append")
 newDF.write.mode("append").saveAsTable(Database)
 }
@@ -232,5 +234,5 @@ else{
 print(k + "create")
 newDF.saveAsTable(Database)
 }
-}
+}*/
 // [755518498722443264,0,1,Having chronic migraines as well as stomach ulcers so you're unable to take aspirin is what actual hell is like🙃]
