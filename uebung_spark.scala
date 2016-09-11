@@ -35,7 +35,7 @@ val DemoUser = "TestUser"
 import org.apache.spark.sql._
 
 val hiveContext = new org.apache.spark.sql.hive.HiveContext(sc)
-val hivesql =  hiveContext.sql("FROM demo_user_db.twitter_use_case1 SELECT text, key LIMIT 100")
+val hivesql =  hiveContext.sql("FROM demo_user_db.twitter_use_case1 SELECT text, key LIMIT 1000")
 //val hivesql =  hiveContext.sql("FROM demo_user_db.twitter_use_case1 SELECT * LIMIT 10000")
 val rdd = hivesql.rdd
 val raw = rdd.map {
@@ -226,6 +226,13 @@ val win2 = raw.zip(clusterId10).zip(clusterId20).zip(clusterId30)
 val WinDF = win2.map({case((((text: String, key: String), (clusterId10: Int, k10: Int)), (clusterId20: Int, k20: Int)) , (clusterId30: Int, k30: Int))=>( text,key,clusterId10,clusterId20,clusterId30)}).toDF("orgText","key","clusterId10","clusterId20","clusterId30")
 val newDF = WinDF.join(hivesql,"key")
 newDF.saveAsTable(Database)
+
+
+val fui=vecdense2.zip(clusterId10)
+for (k<-1 to 10 by 1){
+val filterfui=fui.filter(x => x(3)==1)
+}
+
 /*if (k > 10){
 print(k + "append")
 newDF.write.mode("append").saveAsTable(Database)
