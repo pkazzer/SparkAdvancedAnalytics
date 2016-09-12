@@ -177,6 +177,7 @@ object ParseWikipedia {
 }
  
 //NumTerms Limit bestimmen und termDocMatrix, termIds, docIds, idfs ausgeben
+import org.apache.spark.{SparkConf, SparkContext}
 val conf = new SparkConf().set("spark.serializer", "org.apache.spark.serializer.KryoSerializer").set("spark.kryoserializer.buffer.mb","1000000") 
 val numTerms = 50000
 val (termDocMatrix, termIds, docIds, idfs) = ParseWikipedia.documentTermMatrix(lemmatized, stopWords, numTerms, sc)
@@ -188,7 +189,7 @@ val (termDocMatrix, termIds, docIds, idfs) = ParseWikipedia.documentTermMatrix(l
 import org.apache.spark.mllib.clustering._
 import org.apache.spark.mllib.linalg._
 import org.apache.spark.rdd._
-import org.apache.spark.{SparkConf, SparkContext}
+
 import org.apache.spark.SparkContext._
 import org.apache.spark.mllib.util.MLUtils
 
@@ -197,7 +198,7 @@ def visualizationInR(rawData: RDD[Vector],k: Int): RDD[(Int,Int)] = {
     val data = rawData.cache()
     val kmeans = new KMeans()
     kmeans.setK(k)
-    kmeans.setRuns(5)
+    kmeans.setRuns(30)
     kmeans.setEpsilon(1.0e-6)
     val model = kmeans.run(data)
     val sample = data.map(datum =>
@@ -216,7 +217,8 @@ def visualizationInR(rawData: RDD[Vector],k: Int): RDD[(Int,Int)] = {
 //val termDocMatrix = MLUtils.loadVectors(sc, "hdfs:///user/" + DemoUser + "/termDocMatrix")
 val parsedDataVal = termDocMatrix.map(_.toDense.values)
 val vecdense2 = parsedDataVal.map(Vectors.dense(_)).cache()
-val Database="demo_user_db.Twitter_Resultstest"
+val Database="demo_user_db.Twitter_Resultstest_e10"
+val Database="demo_user_db.Twitter_Resultstest_e6_Runs30"
 //for( k <- 10 to 30 by 10 ){
 val clusterId10 = visualizationInR(vecdense2,10)
 val clusterId20 = visualizationInR(vecdense2,20)
@@ -231,7 +233,26 @@ newDF.saveAsTable(Database)
 val fui=vecdense2.zip(clusterId10)
 for (k<-1 to 10 by 1){
 val filterfui=fui.filter(x => x(3)==1)
+
+
 }
+
+
+ val fuifilter=fui.map(_._1)
+fuifilter: org.apache.spark.rdd.RDD[org.apache.spark.mllib.linalg.Vector] = MapPartitionsRDD[332] at map at <console>:75
+
+scala> val fuifilter=fui.map(_._2)
+fuifilter: org.apache.spark.rdd.RDD[(Int, Int)] = MapPartitionsRDD[333] at map at <console>:75
+
+scala> val fuifilter=fui.map(_._2).map(_._1)
+fuifilter: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[335] at map at <console>:75
+
+scala> val fuifilter=fui.map(_._2).map(_._1).first
+fuifilter: Int = 0
+
+scala> val fuifilter=fui.map(_._2).map(_._2).first
+fuifilter: Int = 10
+
 
 /*if (k > 10){
 print(k + "append")
