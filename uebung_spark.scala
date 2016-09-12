@@ -178,7 +178,7 @@ object ParseWikipedia {
  
 //NumTerms Limit bestimmen und termDocMatrix, termIds, docIds, idfs ausgeben
 import org.apache.spark.{SparkConf, SparkContext}
-val conf = new SparkConf().set("spark.serializer", "org.apache.spark.serializer.KryoSerializer").set("spark.kryoserializer.buffer.mb","1000000") 
+val conf = new SparkConf().set("spark.serializer", "org.apache.spark.serializer.KryoSerializer").set("spark.kryoserializer.buffer","12048mb") 
 val numTerms = 50000
 val (termDocMatrix, termIds, docIds, idfs) = ParseWikipedia.documentTermMatrix(lemmatized, stopWords, numTerms, sc)
 
@@ -198,12 +198,15 @@ def visualizationInR(rawData: RDD[Vector],k: Int): RDD[(Int,Int)] = {
     val data = rawData.cache()
     val kmeans = new KMeans()
     kmeans.setK(k)
-    kmeans.setRuns(10)
-    kmeans.setEpsilon(1.0e-10)
+    kmeans.setRuns(50)
+    kmeans.setEpsilon(1.0e-2)
+    kmeans.setInitializationMode(KMeans.K_MEANS_PARALLEL)
+    val time = System.currentTimeMillis()
     val model = kmeans.run(data)
-    val sample = data.map(datum =>
-      (model.predict(datum),k)
-    )
+    val sample = data.map(datum =>(model.predict(datum),k))
+   print(time) 
+   
+    
     //sample.saveAsTextFile("hdfs:///user/" + DemoUser + "/kmeans"+k)
     data.unpersist()
     (sample)
@@ -217,8 +220,8 @@ def visualizationInR(rawData: RDD[Vector],k: Int): RDD[(Int,Int)] = {
 //val termDocMatrix = MLUtils.loadVectors(sc, "hdfs:///user/" + DemoUser + "/termDocMatrix")
 val parsedDataVal = termDocMatrix.map(_.toDense.values)
 val vecdense2 = parsedDataVal.map(Vectors.dense(_)).cache()
-val Database="demo_user_db.Twitter_Resultstest_e10"
-val Database="demo_user_db.Twitter_Resultstest_e6_Runs30"
+
+val Database="demo_user_db.Twitter_Resultstest_e2_Runs50"
 //for( k <- 10 to 30 by 10 ){
 val clusterId10 = visualizationInR(vecdense2,10)
 val clusterId20 = visualizationInR(vecdense2,20)
@@ -230,50 +233,24 @@ val newDF = WinDF.join(hivesql,"key")
 newDF.saveAsTable(Database)
 
 
-val fui=vecdense2.zip(clusterId10)
-for (k<-1 to 10 by 1){
-val filterfui=fui.filter(x => x(3)==1)
 
 
-}
-
-
- val fuifilter=fui.map(_._1)
-fuifilter: org.apache.spark.rdd.RDD[org.apache.spark.mllib.linalg.Vector] = MapPartitionsRDD[332] at map at <console>:75
-
-scala> val fuifilter=fui.map(_._2)
-fuifilter: org.apache.spark.rdd.RDD[(Int, Int)] = MapPartitionsRDD[333] at map at <console>:75
-
-scala> val fuifilter=fui.map(_._2).map(_._1)
-fuifilter: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[335] at map at <console>:75
-
-scala> val fuifilter=fui.map(_._2).map(_._1).first
-fuifilter: Int = 0
-
-scala> val fuifilter=fui.map(_._2).map(_._2).first
-fuifilter: Int = 10
-
-
-/*if (k > 10){
-print(k + "append")
-newDF.write.mode("append").saveAsTable(Database)
-}
-else{
-print(k + "create")
-newDF.saveAsTable(Database)
-}
-}*/
 // [755518498722443264,0,1,Having chronic migraines as well as stomach ulcers so you're unable to take aspirin is what actual hell is like🙃]
-
-
-val data = sc.textFile("data/mllib/kmeans_data.txt")
-val parsedData = data.map(s => Vectors.dense(s.split(' ').map(_.toDouble))).cache()
-
-// Cluster the data into two classes using KMeans
-val numClusters = 2
-val numIterations = 20
-val clusters = KMeans.train(parsedData, numClusters, numIterations)
-
-// Evaluate clustering by computing Within Set Sum of Squared Errors
-val WSSSE = clusters.computeCost(parsedData)
-println("Within Set Sum of Squared Errors = " + WSSSE)
+import org.apache.spark.mllib.clustering.GaussianMixture
+import org.apache.spark.mllib.clustering.GaussianMixtureModel
+import org.apache.spark.mllib.linalg.Vectors
+def gausian(rawData: RDD[Vector],k: Int): RDD[(Int,Int)] = {
+val data = rawData.cache()
+val model = new GaussianMixture().setK(k).run(data)
+val sample = data.map(datum =>(model.predict(datum),k)).cache()
+data.unpersist()
+ (sample)
+}
+val gDatabase="demo_user_db.Twitter_Resultstest_gaussian"
+val gclusterId10 = gausian(termDocMatrix,10)
+val gclusterId20 = gausian(vecdense2,20)
+val gclusterId30 = gausian(vecdense2,30)
+val gwin2 = raw.zip(gclusterId10).zip(gclusterId20).zip(gclusterId30)
+val gWinDF = gwin2.map({case((((text: String, key: String), (gclusterId10: Int, k10: Int)), (gclusterId20: Int, k20: Int)) , (gclusterId30: Int, k30: Int))=>( text,key,gclusterId10,gclusterId20,gclusterId30)}).toDF("orgText","key","clusterId10","clusterId20","clusterId30")
+val gnewDF = gWinDF.join(hivesql,"key")
+gnewDF.saveAsTable(gDatabase)
