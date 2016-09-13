@@ -228,3 +228,51 @@ object RunLSA {
     println(idWeights.map{case (score, id) => (entityIds(id), score)}.mkString(", "))
   }
 }
+//Zip CLuster10 mit termDocMatrix
+
+val zip_TfMatrix_10 = termDocMatrix.zip(clusterId10).zipwithIndex
+
+//Index initialisieren: Array[Long]
+ val Index=filterZip_TfMatrix_10.map(_._2).toArray
+
+//filtere docId Termfreq und termId nach  clusterId (_._2._1)
+val filterZip_TfMatrix_10 =  zip_TfMatrix_10 filter {_._1._2._1==0}
+for (i <- 0 until Index.size){
+val filter_DocId_10 = docIds(Index(i)).
+val filter_TermId_10 = docIds(Index(i))
+}
+val tomap_DocId_10 = docIds.zipWithUniqueID.map(_.swap).collectAsMap()
+val tomap_TermId_10 = docIds.zipWithIndex.toMap.map(_.swap)
+
+//Abschneiden und cache
+val cutted10= filterZip_TfMatrix_10.map {
+ case ((tfidfs: Vector), (clusterId: Int, k: Int)) => (tfidfs)}
+ 
+ cutted10.cache()
+ val cuttedDocId = filterzip_DocId_10
+//SVD ausführen
+
+//Größe der Matrix: kSVD x kSVD
+
+val kSVD=1
+
+val mat = new RowMatrix(cutted10)
+val svd = mat.computeSVD(kSVD, computeU=true)
+
+    println("Singular values: " + svd.s)
+    val topConceptTerms = RunLSA.topTermsInTopConcepts(svd, kSVD, 3, termIds)
+    val topConceptDocs = RunLSA.topDocsInTopConcepts(svd, kSVD, 1, docIds)
+    for ((terms, docs) <- topConceptTerms.zip(topConceptDocs)) {
+      println("Concept terms: " + terms.map(_._1).mkString(", "))
+      println("Concept docs: " + docs.map(_._1).mkString(", "))
+      println()
+    }
+}
+
+val topterms = new ArrayBuffer [String]
+val topdocs = new ArrayBuffer [String]
+
+    for ((terms, docs) <- topConceptTerms.zip(topConceptDocs)) {
+      topterms += terms.map(_._1).mkString(", ")
+      topdocs += docs.map(_._1).mkString(", ")
+    }
