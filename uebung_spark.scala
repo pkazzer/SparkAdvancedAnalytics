@@ -225,7 +225,7 @@ def visualizationInR(rawData: RDD[Vector],k: Int): RDD[(Int,Int)] = {
 //val termDocMatrix = MLUtils.loadVectors(sc, "hdfs:///user/" + DemoUser + "/termDocMatrix")
 val parsedDataVal = termDocMatrix.map(_.toDense.values)
 val vecdense2 = parsedDataVal.map(Vectors.dense(_)).cache()
-val Database="demo_user_db.Twitter_Resultstest_30000"
+val Database="demo_user_db.Twitter_Results_Schulung"
 //for( k <- 10 to 30 by 10 ){
 val clusterId10 = visualizationInR(vecdense2,10)
 val clusterId20 = visualizationInR(vecdense2,20)
